@@ -79,7 +79,10 @@ async def initialize_terminals(
             terminals[terminal_id] = Output.decode(
                 terminal_id = terminal_id,
                 terminal_status = terminal_status,
-                label = output_labels[terminal_id],
+                # The output label table only covers the on-board outputs.
+                # A terminal of an expansion (or a virtual one) programmed as
+                # output has its description in the terminal label table.
+                label = output_labels.get(terminal_id, zone_labels.get(terminal_id, "")),
             )
 
 

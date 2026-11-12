@@ -1,5 +1,14 @@
 from dataclasses import dataclass
 from enum import auto, IntEnum
+from typing import Final
+
+
+'''
+Virtual terminals programmed as outputs ("uscite virtuali": scenario triggers,
+shutter commands, ...) report type 0x02. Their status has the same layout as a
+physical output (state in the second byte) and they are driven by the same command.
+'''
+VIRTUAL_OUTPUT_TYPE_BYTE: Final[int] = 0x02
 
 
 class TerminalType(IntEnum):
@@ -23,6 +32,8 @@ class TerminalStatus:
             raw_bytes: bytes
     ) -> TerminalType:
         # Check the first byte to determine terminal type
+        if raw_bytes[0] == VIRTUAL_OUTPUT_TYPE_BYTE:
+            return TerminalType.OUTPUT
         try:
             return TerminalType(raw_bytes[0])
         except ValueError:
