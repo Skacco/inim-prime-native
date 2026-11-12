@@ -23,6 +23,9 @@ from inim.prime.native.operations.outputs.set_output_status import set_output_st
 from inim.prime.native.operations.panel.get_panel_info import get_panel_info
 from inim.prime.native.operations.partitions.reset_partition_alarm_memories import reset_partition_memories
 from inim.prime.native.operations.partitions.set_partition_arming_statuses import set_partition_arming_statuses
+from inim.prime.native.operations.zones.const import (
+    FIRMWARE_5_ZONE_1_ID_OFFSET, ZONE_1_ID_OFFSET, get_zone_1_id_offset,
+)
 from inim.prime.native.operations.zones.set_zone_bypass import set_zone_bypass
 from inim.prime.native.utils import Interval, make_intervals
 from inim.prime.native.wire.protocol import Protocol
@@ -67,6 +70,7 @@ class Client:
         "_terminals",
         "_terminal_intervals",
         "_zone_to_terminal",
+        "_zone_1_id_offset",
         "_zones",
         "_outputs",
         "_output_intervals",
@@ -131,6 +135,7 @@ class Client:
         self._terminals: dict[int, Terminal] = {}
         self._terminal_intervals: list[Interval] = []
         self._zone_to_terminal: dict[int, int] = {}
+        self._zone_1_id_offset: int = ZONE_1_ID_OFFSET
         self._zones: dict[int, Zone] = {}
         self._outputs: dict[int, Output] = {}
         self._output_intervals: list[Interval] = []
@@ -197,7 +202,9 @@ class Client:
         async with self._lock:
             serial_number, firmware, model = await get_panel_info(self._protocol)
 
-            terminals = await initialize_terminals(self._protocol, self._pin)
+            # The id of a double zone's second zone depends on the firmware.
+            zone_1_id_offset = get_zone_1_id_offset(firmware)
+            terminals = await initialize_terminals(self._protocol, self._pin, zone_1_id_offset)
 
             zone_to_terminal: dict[int, int] = {}
             zones: dict[int, Zone] = {}
@@ -240,6 +247,7 @@ class Client:
             self._terminals = terminals
             self._terminal_intervals = terminal_intervals
             self._zone_to_terminal = zone_to_terminal
+            self._zone_1_id_offset = zone_1_id_offset
             self._zones = zones
             self._outputs = outputs
             self._output_intervals = output_intervals
@@ -445,9 +453,18 @@ class Client:
         if zone_id not in self._zones:
             raise KeyError(f"Unknown zone id: {zone_id}")
 
+        # Firmware 5 does not accept the id of a double zone's second zone here:
+        # it is addressed with its terminal id (see set_zone_bypass).
+        second_zone_of_terminal = (
+            self._zone_1_id_offset == FIRMWARE_5_ZONE_1_ID_OFFSET
+            and zone_id >= self._zone_1_id_offset
+        )
+        if second_zone_of_terminal:
+            zone_id = self._zone_to_terminal[zone_id]
+
         async with self._lock:
             await set_zone_bypass(
-                self._protocol, zone_id, bypass, self._pin,
+                self._protocol, zone_id, bypass, self._pin, second_zone_of_terminal,
             )
 
     async def set_all_zone_bypasses(

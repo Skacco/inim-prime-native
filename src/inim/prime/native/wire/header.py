@@ -206,6 +206,11 @@ class InnerHeader(Header):
         inner_frame_length: Final[slice] = next_slice(operation, inner_frame_length_size)
 
     MAGIC: ClassVar[bytes] = b"\x50\x50"
+    # Firmware 5.x panels tag the inner frame of their responses with 0x5054
+    # instead of 0x5050 (seen on a Prime060 5.00). CRC, lengths, operation and
+    # payload are the same. Requests keep 0x5050, which both firmwares accept.
+    FIRMWARE_5_RESPONSE_MAGIC: ClassVar[bytes] = b"\x50\x54"
+    VALID_MAGICS: ClassVar[tuple[bytes, ...]] = (MAGIC, FIRMWARE_5_RESPONSE_MAGIC)
 
 
     ### Attributes
@@ -303,8 +308,8 @@ class InnerHeader(Header):
     ## Validation
     @property
     def is_magic_valid(self) -> bool:
-        """True if magic bytes match 0x5050."""
-        return self.magic == InnerHeader.MAGIC
+        """True if magic bytes match 0x5050, or 0x5054 (firmware 5.x responses)."""
+        return self.magic in InnerHeader.VALID_MAGICS
 
     @property
     def is_valid(self) -> bool:
@@ -338,6 +343,7 @@ class InnerHeader(Header):
         """
         if not self.is_magic_valid:
             raise ValueError(
-                f"Inner header magic mismatch: expected {InnerHeader.MAGIC.hex()}, "
+                f"Inner header magic mismatch: expected one of "
+                f"{', '.join(magic.hex() for magic in InnerHeader.VALID_MAGICS)}, "
                 f"got {self.magic.hex()}."
             )
