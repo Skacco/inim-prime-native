@@ -9,11 +9,11 @@ ENABLE_BYPASS_VALUE: Final[int] = 0
 DISABLE_BYPASS_VALUE: Final[int] = 2
 
 '''
-Firmware 5 refuses the id of the second zone of a double-zone terminal in this
+The panel refuses the id of the second zone of a double-zone terminal in this
 command (the response data is 05 00, as for a terminal that is not a zone).
 The second zone is addressed with the terminal id and a different value.
-Response data seen on a Prime060 5.00: 01 00 nothing to change, 02 00 bypassed,
-03 00 bypass removed, 05 00 refused.
+Response data seen on a Prime060 5.00 and on a Prime120 4.07: 01 00 nothing to
+change, 02 00 bypassed, 03 00 bypass removed, 05 00 refused.
 '''
 ENABLE_SECOND_ZONE_BYPASS_VALUE: Final[int] = 1
 DISABLE_SECOND_ZONE_BYPASS_VALUE: Final[int] = 3
@@ -25,8 +25,8 @@ def assemble_data(
 ) -> bytes:
     """
     :param zone_id: Zone id, or the terminal id when second_zone_of_terminal is set.
-    :param second_zone_of_terminal: Firmware 5 only: act on the second zone of
-                                    the double-zone terminal zone_id.
+    :param second_zone_of_terminal: Act on the second zone of the double-zone
+                                    terminal zone_id.
     """
     zone_id_bytes = encode_int(zone_id, Encoding.UINT16_LE)
 

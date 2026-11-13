@@ -24,7 +24,7 @@ from inim.prime.native.operations.panel.get_panel_info import get_panel_info
 from inim.prime.native.operations.partitions.reset_partition_alarm_memories import reset_partition_memories
 from inim.prime.native.operations.partitions.set_partition_arming_statuses import set_partition_arming_statuses
 from inim.prime.native.operations.zones.const import (
-    FIRMWARE_5_ZONE_1_ID_OFFSET, ZONE_1_ID_OFFSET, get_zone_1_id_offset,
+    ZONE_1_ID_OFFSET, get_zone_1_id_offset,
 )
 from inim.prime.native.operations.zones.set_zone_bypass import set_zone_bypass
 from inim.prime.native.utils import Interval, make_intervals
@@ -453,12 +453,9 @@ class Client:
         if zone_id not in self._zones:
             raise KeyError(f"Unknown zone id: {zone_id}")
 
-        # Firmware 5 does not accept the id of a double zone's second zone here:
+        # The panel does not accept the id of a double zone's second zone here:
         # it is addressed with its terminal id (see set_zone_bypass).
-        second_zone_of_terminal = (
-            self._zone_1_id_offset == FIRMWARE_5_ZONE_1_ID_OFFSET
-            and zone_id >= self._zone_1_id_offset
-        )
+        second_zone_of_terminal = zone_id >= self._zone_1_id_offset
         if second_zone_of_terminal:
             zone_id = self._zone_to_terminal[zone_id]
 
