@@ -1,5 +1,7 @@
 # inim-prime-native
 
+> Published on PyPI as [`inim-prime-native`](https://pypi.org/project/inim-prime-native/) and maintained by [Skacco](https://github.com/Skacco). Original author: [Pitscheider](https://github.com/Pitscheider/inim-prime-native).
+
 An unofficial Python library for communicating with **Inim Prime** alarm panels using the native binary protocol, the same protocol used by the official Inim Prime/STUDIO software.
 
 > **Legal notice:** This library was developed through passive observation of network traffic between Inim Prime/STUDIO and an Inim Prime panel owned by the author, for personal interoperability purposes. No proprietary code or firmware was decompiled or reproduced. This work is published in good faith under the GNU GPL v3.0. See [LEGAL.md](LEGAL.md) for a full statement.

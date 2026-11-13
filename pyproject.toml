@@ -3,10 +3,13 @@ name = "inim-prime-native"
 description = "Python library for INIM Prime native protocol"
 readme = "README.md"
 requires-python = ">=3.14"
-version = "0.0.1"
+version = "0.1.0"
 license = { text = "GPLv3" }
 authors = [
     { name = "Pitscheider", email = "pitscheider@tuta.com" }
+]
+maintainers = [
+    { name = "Skacco" }
 ]
 
 dependencies = [
@@ -18,3 +21,11 @@ dev = [
     "pyyaml",
     "scapy",
 ]
+
+[project.urls]
+Homepage = "https://github.com/Skacco/inim-prime-native"
+"Original project" = "https://github.com/Pitscheider/inim-prime-native"
+
+[build-system]
+requires = ["setuptools>=65.5", "wheel"]
+build-backend = "setuptools.build_meta"
