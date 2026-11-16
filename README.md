@@ -6,8 +6,8 @@ An unofficial Python library for communicating with **Inim Prime** alarm panels 
 
 > **Legal notice:** This library was developed through passive observation of network traffic between Inim Prime/STUDIO and an Inim Prime panel owned by the author, for personal interoperability purposes. No proprietary code or firmware was decompiled or reproduced. This work is published in good faith under the GNU GPL v3.0. See [LEGAL.md](LEGAL.md) for a full statement.
 
-> **Status: early / experimental.**
-> The wire layer is functional. A small set of operations (partition control, panel info) are implemented. A unified client class does not yet exist. The API surface will change. This is an initial publication to share the protocol research, not a production-ready library.
+> **Status: beta.**
+> The wire layer and the `Client` class are functional and used daily by a Home Assistant integration on firmware 4.x and 5.x panels. The API surface may still change.
 
 ---
 
@@ -43,6 +43,14 @@ The goal is to provide a Home Assistant integration that communicates with Inim 
 - `set_partition_arming_statuses` — arm or disarm partitions (total, partial, instant, disarmed)
 - `reset_partition_memories` — reset partition alarm state
 - `resolve_address` — internal address indirection lookup
+- Zones (single and double): state, bypass, alarm memory; bypass of single zones or of all zones
+- Outputs, including those on expansion and virtual terminals: state and control
+- Firmware 4.x and 5.x panels
+
+**Client** (`inim/prime/native/client.py`)
+
+- A single `Client` class that handles the connection, reads the panel configuration once (`initialize()`) and keeps partitions, zones and outputs up to date (`update_status()`)
+- Commands: arm/disarm partitions, reset alarm memories, bypass zones, set outputs
 
 **Developer tools** (`tools/`)
 
@@ -54,12 +62,8 @@ The goal is to provide a Home Assistant integration that communicates with Inim 
 
 ## What Is Not Yet Implemented
 
-- A unified `Client` class, currently callers must manage a `Protocol` instance directly
-- Zone state (sensors, detectors)
-- Output control
 - Event log reading
 - Complete handling of the command response envelope
-- Proper packaging (`pyproject.toml`, etc.)
 
 ---
 
@@ -94,7 +98,7 @@ The REPL and tools read from a `config.yaml` file in the project root:
 
 ```yaml
 host: 192.168.1.100   # IP address of your panel
-password: yourpass    # Panel connection password (default: pass)
+password: yourpass    # Panel connection password
 port: 6004            # TCP port (default: 6004)
 pin: "1234"           # User PIN for arming/disarming (optional)
 use_outer_frame: true # Set false if using the OnboardLAN, true if using the PrimeLAN
@@ -107,15 +111,17 @@ poll: 1.0             # Poll interval in seconds (for future use)
 
 ```python
 import asyncio
-from inim.prime.native.wire.protocol import Protocol
-from inim.prime.native.operations import get_partitions
+from inim.prime.native.client import Client
 
 
 async def main():
-    async with Protocol(host = "192.168.1.100", password = "yourpass", port = 6004) as proto:
-        partitions = await get_partitions(proto)
-        for p in partitions:
-            print(p)
+    async with Client(host = "192.168.1.100", password = "yourpass", use_outer_frame = True) as client:
+        await client.initialize()
+        await client.update_status()
+        for partition in client.partitions.values():
+            print(partition)
+        for zone in client.zones.values():
+            print(zone)
 
 
 asyncio.run(main())
