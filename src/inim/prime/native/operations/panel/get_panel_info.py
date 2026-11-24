@@ -1,7 +1,7 @@
 from typing import Final
 
 from inim.prime.native.const import CommandOperation
-from inim.prime.native.utils import next_slice
+from inim.prime.native.utils import decode_text, next_slice
 from inim.prime.native.wire.payload import CommandRequestPayload
 from inim.prime.native.wire.protocol import Protocol
 
@@ -26,8 +26,8 @@ def assemble_payload() -> bytes:
 
 
 def disassemble_data(response_data: bytes) -> tuple[str, str]:
-    serial_number = response_data[Layout.serial_number].decode("ascii").rstrip()
-    description = response_data[Layout.description].decode("ascii").rstrip()
+    serial_number = decode_text(response_data[Layout.serial_number])
+    description = decode_text(response_data[Layout.description])
 
     return serial_number, description
 

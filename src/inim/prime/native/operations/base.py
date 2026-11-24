@@ -1,5 +1,5 @@
 from inim.prime.native.const import AddressTable, Encoding, Memory
-from inim.prime.native.utils import decode_int, Interval
+from inim.prime.native.utils import decode_int, decode_text, Interval
 from inim.prime.native.wire.protocol import Protocol
 
 
@@ -38,6 +38,6 @@ async def get_labels(
             start = interval.start,
     ):
         label = response[offset:offset + Memory.LABEL_SIZE]
-        labels[idx] = label.decode("ascii").strip()
+        labels[idx] = decode_text(label)
 
     return labels

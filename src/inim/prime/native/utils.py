@@ -162,3 +162,14 @@ def make_intervals(values: list[int]) -> list[Interval]:
 
     intervals.append(Interval(start, end))
     return intervals
+
+
+### Text
+def decode_text(data: bytes) -> str:
+    """Panel text (labels, serial number, description) as a string.
+
+    A field never programmed holds 0xFF bytes (erased memory) and a short one
+    is padded with zeros: both are dropped. Any other byte that is not ASCII
+    becomes "?" instead of failing the whole read.
+    """
+    return data.replace(b"\xff", b"").replace(b"\x00", b"").decode("ascii", errors = "replace").replace("�", "?").strip()
