@@ -17,6 +17,13 @@ FIRMWARE_5_EXTRA_ZONES: Final[int] = 500
 FIRMWARE_5_ZONE_1_ID_OFFSET: Final[int] = ZONE_1_ID_OFFSET + FIRMWARE_5_EXTRA_ZONES
 FIRMWARE_5_MAJOR_VERSION: Final[int] = 5
 
+'''
+Firmware 2 has shorter zone tables: the second zones of the double-zone
+terminals start at 240 ("Centrale T01D" at 240, read on a Prime060 2.01).
+'''
+FIRMWARE_2_ZONE_1_ID_OFFSET: Final[int] = 240
+FIRMWARE_2_MAJOR_VERSION: Final[int] = 2
+
 
 def get_zone_1_id_offset(firmware: str) -> int:
     """
@@ -26,8 +33,11 @@ def get_zone_1_id_offset(firmware: str) -> int:
     Falls back to the firmware 4 layout when the version cannot be read.
     """
     major_version, _, _ = firmware.strip().partition(".")
-    if major_version.isdigit() and int(major_version) >= FIRMWARE_5_MAJOR_VERSION:
-        return FIRMWARE_5_ZONE_1_ID_OFFSET
+    if major_version.isdigit():
+        if int(major_version) >= FIRMWARE_5_MAJOR_VERSION:
+            return FIRMWARE_5_ZONE_1_ID_OFFSET
+        if int(major_version) == FIRMWARE_2_MAJOR_VERSION:
+            return FIRMWARE_2_ZONE_1_ID_OFFSET
     return ZONE_1_ID_OFFSET
 
 

@@ -31,6 +31,10 @@ class TerminalStatus:
     def decode_type(
             raw_bytes: bytes
     ) -> TerminalType:
+        # A terminal the panel does not have reports all zeros (seen on a
+        # Prime060 2.01 past its last terminal); a real zone never does.
+        if not any(raw_bytes):
+            return TerminalType.DISABLED
         # Check the first byte to determine terminal type
         if raw_bytes[0] == VIRTUAL_OUTPUT_TYPE_BYTE:
             return TerminalType.OUTPUT
